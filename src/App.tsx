@@ -32,7 +32,7 @@ const router = createBrowserRouter(
     },
   ],
   {
-    basename: '/portfolio',
+    basename: '/portfolio.github.io',
   },
 )
 
