@@ -6,30 +6,35 @@ import { LoginPage } from './pages/LoginPage'
 import { AdminPage } from './pages/AdminPage'
 import { AuthProvider } from './pages/auth-context'
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <Layout />,
+      children: [
+        {
+          index: true,
+          element: <PublicHome />,
+        },
+        {
+          path: 'p/:slug',
+          element: <PortfolioPage />,
+        },
+        {
+          path: 'login',
+          element: <LoginPage />,
+        },
+        {
+          path: 'admin',
+          element: <AdminPage />,
+        },
+      ],
+    },
+  ],
   {
-    path: '/',
-    element: <Layout />,
-    children: [
-      {
-        index: true,
-        element: <PublicHome />,
-      },
-      {
-        path: 'p/:slug',
-        element: <PortfolioPage />,
-      },
-      {
-        path: 'login',
-        element: <LoginPage />,
-      },
-      {
-        path: 'admin',
-        element: <AdminPage />,
-      },
-    ],
+    basename: '/portfolio',
   },
-])
+)
 
 export default function App() {
   return (
