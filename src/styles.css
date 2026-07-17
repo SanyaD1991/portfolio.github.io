@@ -180,17 +180,27 @@ img { display: block; max-width: 100%; }
   border-color: color-mix(in srgb, var(--portfolio-accent) 70%, transparent);
 }
 .portfolio-section-nav button.is-active {
-  background: #fff;
+  background: #ffffff;
   color: #161616;
-  border-color: #fff;
-  box-shadow: 0 8px 24px rgba(0,0,0,.16);
+  border-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+.portfolio-section-nav button.is-active span {
+  color: var(--portfolio-accent);
 }
 .portfolio-section-nav.is-detached button.is-active {
-  background: var(--portfolio-text);
-  color: var(--portfolio-bg);
-  border-color: var(--portfolio-text);
+  background: #171717;
+  color: #ffffff;
+  border-color: #171717;
 }
-.portfolio-section-nav button.is-active span { color: var(--portfolio-accent); }
+
+.portfolio-section-nav.is-detached button.is-active strong {
+  color: #ffffff;
+}
+
+.portfolio-section-nav.is-detached button.is-active span {
+  color: rgba(255, 255, 255, 0.72);
+}
 .content-section { padding: 6vw 5vw; border-top: 1px solid color-mix(in srgb, var(--portfolio-text) 20%, transparent); scroll-margin-top: 176px; }
 .section-heading { display: grid; grid-template-columns: 80px 1fr; margin-bottom: 48px; }
 .section-heading h2 { margin: 0; font-family: 'Unbounded'; font-size: clamp(30px,4vw,62px); }
