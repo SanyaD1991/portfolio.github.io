@@ -11,14 +11,30 @@ const router = createBrowserRouter([
     path: '/',
     element: <Layout />,
     children: [
-      { index: true, element: <PublicHome /> },
-      { path: 'p/:slug', element: <PortfolioPage /> },
-      { path: 'login', element: <LoginPage /> },
-      { path: 'admin', element: <AdminPage /> },
+      {
+        index: true,
+        element: <PublicHome />,
+      },
+      {
+        path: 'p/:slug',
+        element: <PortfolioPage />,
+      },
+      {
+        path: 'login',
+        element: <LoginPage />,
+      },
+      {
+        path: 'admin',
+        element: <AdminPage />,
+      },
     ],
   },
 ])
 
 export default function App() {
-  return <AuthProvider><RouterProvider router={router} /></AuthProvider>
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  )
 }
