@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { Eye, FileUp, ImagePlus, LogOut, Plus, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { Achievement, Portfolio, PortfolioSection, Project, SectionType } from '../types'
@@ -78,7 +78,17 @@ export function AdminPage() {
           ))}
         </nav>
         <div className="sidebar-actions">
-          {selected?.is_published && <a className="button ghost" href={`/p/${selected.slug}`} target="_blank" rel="noreferrer"><Eye size={18} /> Открыть сайт</a>}
+          {selected?.is_published && (
+  <Link
+    className="button ghost"
+    to={`/p/${selected.slug}`}
+    target="_blank"
+    rel="noreferrer"
+  >
+    <Eye size={18} />
+    Открыть сайт
+  </Link>
+)}
           {selected && <button className="danger-link" onClick={removePortfolio}><Trash2 size={16} /> Удалить портфолио</button>}
           <button className="ghost-link" onClick={() => void supabase.auth.signOut()}><LogOut size={16} /> Выйти</button>
         </div>
