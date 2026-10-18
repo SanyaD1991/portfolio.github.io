@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Download, ExternalLink, Mail } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -158,12 +158,6 @@ export function PortfolioPage() {
     })()
   }, [slug])
 
-  const theme = useMemo(() => ({
-    '--portfolio-bg': portfolio?.background_color ?? '#f4f0e8',
-    '--portfolio-text': portfolio?.text_color ?? '#161616',
-    '--portfolio-accent': portfolio?.accent_color ?? '#d95d39',
-  } as React.CSSProperties), [portfolio])
-
   useEffect(() => {
     if (sections.length === 0) {
       setActiveSectionId('')
@@ -220,7 +214,7 @@ export function PortfolioPage() {
   if (error || !portfolio) return <main className="page"><div className="state-card">{error}</div></main>
 
   return (
-    <main className="portfolio-page" style={theme}>
+    <main className="portfolio-page">
       <section ref={heroRef} className={`portfolio-hero ${portfolio.cover_url ? 'has-cover' : 'no-cover'}`}>
         <div
           className="portfolio-hero-banner"

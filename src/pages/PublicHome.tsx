@@ -31,21 +31,21 @@ export function PublicHome() {
     <main className="page public-home">
       <section className="home-intro">
         <span className="eyebrow">Выбранные работы</span>
-        <h1>Демедюк Александр Сергеевич</h1>
+        <h1>Демедюк <em>Александр</em> Сергеевич</h1>
         <p>Портфолио, проекты и профессиональные достижения</p>
       </section>
 
       {error && <div className="notice error">{error}</div>}
 
       <section className="portfolio-grid">
-        {items.map((portfolio) => (
+        {items.map((portfolio, index) => (
           <Link
             className="portfolio-card"
             to={`/p/${portfolio.slug}`}
             key={portfolio.id}
-            style={{ '--accent': portfolio.accent_color } as React.CSSProperties}
           >
             <div className="portfolio-cover">
+              <span className="portfolio-index">{String(index + 1).padStart(2, '0')}</span>
               {portfolio.cover_url ? <img src={portfolio.cover_url} alt="" /> : <div className="cover-placeholder" />}
             </div>
             <div className="portfolio-card-copy">
@@ -53,7 +53,7 @@ export function PublicHome() {
                 <h2>{portfolio.name}</h2>
                 <p>{portfolio.subtitle}</p>
               </div>
-              <ArrowUpRight size={24} />
+              <span className="portfolio-card-arrow"><ArrowUpRight size={20} /></span>
             </div>
           </Link>
         ))}
