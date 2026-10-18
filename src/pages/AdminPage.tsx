@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import type { Achievement, Portfolio, PortfolioSection, Project, SectionType } from '../types'
 import { useAuth } from './auth-context'
 import { Loading } from '../components/Loading'
+import { compressImage } from '../lib/compressImage'
 
 type Tab = 'settings' | 'sections' | 'projects' | 'achievements' | 'media'
 
@@ -329,17 +330,19 @@ function MediaManager({ userId, setNotice }: { userId: string; setNotice: (value
     if (!isAllowed) { setNotice('Можно загружать только изображения и PDF'); return }
     if (file.size > 25 * 1024 * 1024) { setNotice('Файл больше 25 МБ. Уменьшите его и попробуйте снова.'); return }
     setUploading(true)
-    const clean = file.name.replace(/[^a-zA-Z0-9._-]/g, '-')
+    const { file: prepared, before, after } = await compressImage(file)
+    const clean = prepared.name.replace(/[^a-zA-Z0-9._-]/g, '-')
     const path = `${userId}/${Date.now()}-${clean}`
-    const { error } = await supabase.storage.from('portfolio-media').upload(path, file, { upsert: false })
+    const { error } = await supabase.storage.from('portfolio-media').upload(path, prepared, { upsert: false })
     if (error) { setNotice(error.message); setUploading(false); return }
     const { data } = supabase.storage.from('portfolio-media').getPublicUrl(path)
     setUrl(data.publicUrl)
-    setNotice('Файл загружен. Скопируйте ссылку.')
+    const mb = (bytes: number) => (bytes / 1024 / 1024).toFixed(1)
+    setNotice(after < before ? `Файл загружен и сжат: ${mb(before)} МБ → ${mb(after)} МБ. Скопируйте ссылку.` : 'Файл загружен. Скопируйте ссылку.')
     setUploading(false)
   }
   return <EditorPanel title="Медиафайлы" subtitle="Загрузите изображение или PDF и вставьте полученную ссылку в нужное поле.">
-    <label className="upload-box"><div className="upload-icons"><ImagePlus size={34} /><FileUp size={34} /></div><strong>{uploading ? 'Загружаем…' : 'Выберите изображение или PDF'}</strong><span>JPG, PNG, WebP, PDF · до 25 МБ</span><input type="file" accept="image/*,application/pdf,.pdf" disabled={uploading} onChange={(e) => e.target.files?.[0] && void upload(e.target.files[0])} /></label>
+    <label className="upload-box"><div className="upload-icons"><ImagePlus size={34} /><FileUp size={34} /></div><strong>{uploading ? 'Загружаем…' : 'Выберите изображение или PDF'}</strong><span>JPG, PNG, WebP, PDF · до 25 МБ · картинки сжимаются автоматически</span><input type="file" accept="image/*,application/pdf,.pdf" disabled={uploading} onChange={(e) => e.target.files?.[0] && void upload(e.target.files[0])} /></label>
     {url && <div className="url-box"><input readOnly value={url} /><button className="button secondary" onClick={() => void navigator.clipboard.writeText(url)}>Копировать</button></div>}
   </EditorPanel>
 }

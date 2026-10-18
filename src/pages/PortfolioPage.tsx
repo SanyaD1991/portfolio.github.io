@@ -116,6 +116,13 @@ export function PortfolioPage() {
   }, [sections])
 
   useEffect(() => {
+    if (!portfolio) return
+    const previous = document.title
+    document.title = `${portfolio.name.trim()} — Демедюк Александр Сергеевич`
+    return () => { document.title = previous }
+  }, [portfolio])
+
+  useEffect(() => {
     const update = () => {
       const total = document.documentElement.scrollHeight - window.innerHeight
       const value = total > 0 ? Math.min(1, window.scrollY / total) : 0
@@ -209,7 +216,7 @@ export function PortfolioPage() {
               {projects.filter((project) => project.section_id === section.id).map((project, projectIndex) => (
                 <Reveal as="article" className="project-card" key={project.id}>
                   <div className="project-image">
-                    {project.cover_url ? <img src={project.cover_url} alt="" /> : <div className="cover-placeholder" />}
+                    {project.cover_url ? <img src={project.cover_url} alt={project.title} /> : <div className="cover-placeholder" />}
                   </div>
                   <div className="project-card-body">
                     <span className="project-number">{String(projectIndex + 1).padStart(2, '0')}</span>
@@ -231,7 +238,7 @@ export function PortfolioPage() {
                     <div className="project-media">
                       {project.gallery?.length > 0 && <div className="gallery-strip">{project.gallery.map((url, imageIndex) => (
                         <button type="button" className="gallery-item" key={url} onClick={() => setLightbox({ images: project.gallery, index: imageIndex })} aria-label="Открыть изображение">
-                          <img src={url} alt="" loading="lazy" />
+                          <img src={url} alt={`${project.title}: фото ${imageIndex + 1}`} loading="lazy" />
                         </button>
                       ))}</div>}
                       {project.video_urls?.length > 0 && <div className="video-list">{project.video_urls.map((url) => <VideoCard url={url} poster={project.cover_url} key={url} />)}</div>}
