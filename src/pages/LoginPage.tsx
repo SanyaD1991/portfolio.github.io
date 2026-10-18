@@ -26,9 +26,9 @@ export function LoginPage() {
       <form className="auth-card" onSubmit={submit}>
         <span className="eyebrow">Закрытая зона</span>
         <h1>Вход в редактор</h1>
-        <label>Email<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-        <label>Пароль<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
-        <button className="button" disabled={submitting}>{submitting ? 'Входим…' : 'Войти'}</button>
+        <label className="field"><span className="field-label">Email</span><input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
+        <label className="field"><span className="field-label">Пароль</span><input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+        <button className="btn primary" disabled={submitting}>{submitting ? 'Входим…' : 'Войти'}</button>
         {message && <p className="form-message">{message}</p>}
       </form>
     </main>

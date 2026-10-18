@@ -2,15 +2,16 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 
 export function Layout() {
   const { pathname } = useLocation()
-  const isPublic = !pathname.startsWith('/admin') && !pathname.startsWith('/login')
+  const isAdmin = pathname.startsWith('/admin') || pathname.startsWith('/login')
+  const isPublic = !isAdmin
 
   return (
-    <div className={`app-shell ${isPublic ? 'is-public' : ''}`}>
+    <div className={`app-shell is-public ${isAdmin ? 'is-admin' : ''}`}>
       <header className="topbar">
-        <Link to="/" className="brand">{isPublic ? 'Демедюк А. С.' : 'PORTFOLIO / BUILDER'}</Link>
+        <Link to="/" className="brand">{isPublic ? 'Демедюк А. С.' : 'Демедюк А. С. · Конструктор'}</Link>
         <nav>
           <Link to="/">Портфолио</Link>
-          {!isPublic && <Link to="/admin">Редактор</Link>}
+          {isAdmin && <Link to="/admin">Редактор</Link>}
         </nav>
       </header>
       <Outlet />
