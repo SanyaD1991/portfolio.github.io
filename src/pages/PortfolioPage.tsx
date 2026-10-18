@@ -254,9 +254,16 @@ export function PortfolioPage() {
               {achievements.filter((item) => item.section_id === section.id).map((item) => (
                 <Reveal as="article" className={`achievement-card ${item.image_url ? 'has-image' : ''}`} key={item.id}>
                   {item.image_url && (
-                    <a className="achievement-image" href={item.image_url} target="_blank" rel="noreferrer" title="Открыть документ в полном размере">
-                      <img src={item.image_url} alt={item.title} loading="lazy" />
-                    </a>
+                    <button
+                      type="button"
+                      className="achievement-image"
+                      style={{ '--bg': `url("${item.image_url}")` } as React.CSSProperties}
+                      onClick={() => setLightbox({ images: [item.image_url!], index: 0 })}
+                      title="Открыть документ в полном размере"
+                      aria-label={`Открыть: ${item.title}`}
+                    >
+                      <img src={item.image_url} alt={item.title} loading="lazy" decoding="async" />
+                    </button>
                   )}
                   <div className="achievement-title">
                     <span>{item.achievement_date}</span>
