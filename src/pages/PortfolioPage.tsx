@@ -4,97 +4,9 @@ import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Achievement, Portfolio, PortfolioSection, Project } from '../types'
 import { Loading } from '../components/Loading'
-
-
-type ParsedVideo =
-  | { kind: 'file'; src: string }
-  | { kind: 'embed'; src: string; title: string }
-
-function VideoPlayer({ url }: { url: string }) {
-  const video = parseVideoUrl(url)
-
-  if (!video) {
-    return <a className="video-fallback" href={url} target="_blank" rel="noreferrer">Открыть видео</a>
-  }
-
-  if (video.kind === 'file') {
-    return (
-      <div className="video-frame">
-        <video controls preload="metadata" playsInline>
-          <source src={video.src} />
-          Ваш браузер не поддерживает воспроизведение видео.
-        </video>
-      </div>
-    )
-  }
-
-  return (
-    <div className="video-frame">
-      <iframe
-        src={video.src}
-        title={video.title}
-        loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-      />
-    </div>
-  )
-}
-
-function parseVideoUrl(value: string): ParsedVideo | null {
-  const raw = value.trim()
-  if (!raw) return null
-
-  const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
-  let url: URL
-  try {
-    url = new URL(normalized)
-  } catch {
-    return null
-  }
-
-  const host = url.hostname.replace(/^www\./, '').toLowerCase()
-  const pathname = url.pathname
-
-  if (/\.(mp4|webm|ogg)(?:$|[?#])/i.test(normalized)) {
-    return { kind: 'file', src: normalized }
-  }
-
-  if (host === 'youtu.be' || host.endsWith('youtube.com')) {
-    const parts = pathname.split('/').filter(Boolean)
-    const id = host === 'youtu.be'
-      ? parts[0]
-      : url.searchParams.get('v') ?? (['shorts', 'embed', 'live'].includes(parts[0]) ? parts[1] : '')
-    if (id) return { kind: 'embed', src: `https://www.youtube-nocookie.com/embed/${id}`, title: 'Видео YouTube' }
-  }
-
-  if (host === 'vimeo.com' || host.endsWith('.vimeo.com')) {
-    const id = pathname.split('/').filter(Boolean).reverse().find((part) => /^\d+$/.test(part))
-    if (id) return { kind: 'embed', src: `https://player.vimeo.com/video/${id}`, title: 'Видео Vimeo' }
-  }
-
-  if (host === 'rutube.ru' || host.endsWith('.rutube.ru')) {
-    const parts = pathname.split('/').filter(Boolean)
-    if (parts[0] === 'play' && parts[1] === 'embed' && parts[2]) {
-      return { kind: 'embed', src: normalized, title: 'Видео Rutube' }
-    }
-    const videoIndex = parts.findIndex((part) => part === 'video' || part === 'shorts')
-    const id = videoIndex >= 0 ? parts[videoIndex + 1] : ''
-    if (id) return { kind: 'embed', src: `https://rutube.ru/play/embed/${id}/`, title: 'Видео Rutube' }
-  }
-
-  if (host === 'vk.com' || host === 'vkvideo.ru' || host.endsWith('.vk.com') || host.endsWith('.vkvideo.ru')) {
-    if (pathname.includes('video_ext.php')) {
-      return { kind: 'embed', src: normalized, title: 'VK Видео' }
-    }
-    const match = `${pathname}${url.search}`.match(/video(-?\d+)_(\d+)/)
-    if (match) {
-      return { kind: 'embed', src: `https://vkvideo.ru/video_ext.php?oid=${match[1]}&id=${match[2]}&hd=2`, title: 'VK Видео' }
-    }
-  }
-
-  return null
-}
+import { Reveal } from '../components/Reveal'
+import { Lightbox } from '../components/Lightbox'
+import { VideoCard } from '../components/video'
 
 
 async function downloadPdf(url: string, title: string) {
@@ -125,7 +37,9 @@ export function PortfolioPage() {
   const [error, setError] = useState('')
   const [activeSectionId, setActiveSectionId] = useState('')
   const [navDetached, setNavDetached] = useState(false)
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null)
   const heroRef = useRef<HTMLElement | null>(null)
+  const progressRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     void (async () => {
@@ -201,6 +115,21 @@ export function PortfolioPage() {
     }
   }, [sections])
 
+  useEffect(() => {
+    const update = () => {
+      const total = document.documentElement.scrollHeight - window.innerHeight
+      const value = total > 0 ? Math.min(1, window.scrollY / total) : 0
+      progressRef.current?.style.setProperty('--progress', String(value))
+    }
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [])
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(`section-${sectionId}`)
     if (!element) return
@@ -215,6 +144,7 @@ export function PortfolioPage() {
 
   return (
     <main className="portfolio-page">
+      <div className="scroll-progress" ref={progressRef} aria-hidden="true" />
       <section ref={heroRef} className={`portfolio-hero ${portfolio.cover_url ? 'has-cover' : 'no-cover'}`}>
         <div
           className="portfolio-hero-banner"
@@ -261,12 +191,12 @@ export function PortfolioPage() {
         </nav>
       )}
 
-      {sections.map((section) => (
+      {sections.map((section, sectionIndex) => (
         <section className="content-section" id={`section-${section.id}`} key={section.id}>
-          <div className="section-heading">
-            <span>{String(section.sort_order).padStart(2, '0')}</span>
+          <Reveal className="section-heading">
+            <span>{String(sectionIndex + 1).padStart(2, '0')}</span>
             <h2>{section.title}</h2>
-          </div>
+          </Reveal>
 
           {section.type === 'text' && (
             <div className="prose">
@@ -276,12 +206,13 @@ export function PortfolioPage() {
 
           {section.type === 'projects' && (
             <div className="project-grid">
-              {projects.filter((project) => project.section_id === section.id).map((project) => (
-                <article className="project-card" key={project.id}>
+              {projects.filter((project) => project.section_id === section.id).map((project, projectIndex) => (
+                <Reveal as="article" className="project-card" key={project.id}>
                   <div className="project-image">
                     {project.cover_url ? <img src={project.cover_url} alt="" /> : <div className="cover-placeholder" />}
                   </div>
                   <div className="project-card-body">
+                    <span className="project-number">{String(projectIndex + 1).padStart(2, '0')}</span>
                     <div className="project-meta">
                       <span>{project.year}</span>
                       <span>{project.role}</span>
@@ -298,11 +229,15 @@ export function PortfolioPage() {
                   </div>
                   {(project.gallery?.length > 0 || project.video_urls?.length > 0) && (
                     <div className="project-media">
-                      {project.gallery?.length > 0 && <div className="gallery-strip">{project.gallery.map((url) => <img src={url} alt="" key={url} />)}</div>}
-                      {project.video_urls?.length > 0 && <div className="video-list">{project.video_urls.map((url) => <VideoPlayer url={url} key={url} />)}</div>}
+                      {project.gallery?.length > 0 && <div className="gallery-strip">{project.gallery.map((url, imageIndex) => (
+                        <button type="button" className="gallery-item" key={url} onClick={() => setLightbox({ images: project.gallery, index: imageIndex })} aria-label="Открыть изображение">
+                          <img src={url} alt="" loading="lazy" />
+                        </button>
+                      ))}</div>}
+                      {project.video_urls?.length > 0 && <div className="video-list">{project.video_urls.map((url) => <VideoCard url={url} poster={project.cover_url} key={url} />)}</div>}
                     </div>
                   )}
-                </article>
+                </Reveal>
               ))}
             </div>
           )}
@@ -310,7 +245,7 @@ export function PortfolioPage() {
           {section.type === 'achievements' && (
             <div className="achievement-list">
               {achievements.filter((item) => item.section_id === section.id).map((item) => (
-                <article className={`achievement-card ${item.image_url ? 'has-image' : ''}`} key={item.id}>
+                <Reveal as="article" className={`achievement-card ${item.image_url ? 'has-image' : ''}`} key={item.id}>
                   {item.image_url && (
                     <a className="achievement-image" href={item.image_url} target="_blank" rel="noreferrer" title="Открыть документ в полном размере">
                       <img src={item.image_url} alt={item.title} loading="lazy" />
@@ -328,12 +263,21 @@ export function PortfolioPage() {
                       {item.link_url && <a className="achievement-link" href={item.link_url} target="_blank" rel="noreferrer"><ExternalLink size={18} /> Открыть ссылку</a>}
                     </div>
                   </div>
-                </article>
+                </Reveal>
               ))}
             </div>
           )}
         </section>
       ))}
+
+      {lightbox && (
+        <Lightbox
+          images={lightbox.images}
+          index={lightbox.index}
+          onChange={(index) => setLightbox({ ...lightbox, index })}
+          onClose={() => setLightbox(null)}
+        />
+      )}
 
       <footer className="portfolio-footer">
         <h2>Обсудим новый проект?</h2>
